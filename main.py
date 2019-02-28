@@ -1,13 +1,11 @@
 import pytesseract
-from pytesseract.pytesseract import image_to_string
-
-# pytesseract.pytesseract.tesseract_cmd = r"/usr/local/bin/tesseract"
 import regex
 from PIL import Image, ImageEnhance, ImageFilter
 
 IMG_PATH = "usps_sample_2.jpg"
 T_CONT = 112  # Target contrast for image processing
 PYTESS_CONF = '-c tessedit_char_whitelist=0123456789abcdefghijklmnopqrstuvwxyz#:;'
+# pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"
 
 
 def main():
