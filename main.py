@@ -1,26 +1,49 @@
+#!/usr/bin/env python3
+
+# Takes in an image of a shipping receipt, extracts the tracking number, and verifies it
+# Authors: Jason Giroux, Seth Phillips
+# Uses tracking.py from LiterallyLarry. github.com/LiterallyLarry/USPS-Tracking-Python
+
+
 import pytesseract
 import regex
+import platform
+from pathlib import Path
 from PIL import Image, ImageEnhance, ImageFilter
 
-IMG_PATH = "usps_sample_2.jpg"
+IMG_PATH = "receipts"  # Directory containing receipt images
 T_CONT = 112  # Target contrast for image processing
 PYTESS_CONF = '-c tessedit_char_whitelist=0123456789abcdefghijklmnopqrstuvwxyz#:;'
-# pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"
+
+if platform.system() == 'Windows':
+    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"
 
 
 def main():
-    im = Image.open(IMG_PATH)
-    im = im.convert("RGBA")  # Converts image (usually JPG) data to RGBA data for editing
-    # im = enhance(im)
-    ocr_out_raw = pytesseract.image_to_string(im, config=PYTESS_CONF, lang='eng')
-    # print(ocr_out_raw)
+    pathlist = Path(IMG_PATH).glob('**/*.jpg')
+    for path in pathlist:
+        image_path = str(path)
+        print(image_path)
+        ocr(image_path)
 
-    tracking_num = regex.search('(?:#:)([0-9\\s]+)', ocr_out_raw)[1]
-    tracking_num = ''.join(tracking_num.split())
-    print(tracking_num)
+
+def ocr(image_path):
+    with Image.open(image_path) as im:
+        # im = enhance(im)
+        ocr_out_raw = pytesseract.image_to_string(im, config=PYTESS_CONF, lang='eng')
+        # print(ocr_out_raw)
+
+    try:
+        tracking_num = regex.search('(?:#:)([0-9\\s]+)', ocr_out_raw)[1]
+        tracking_num = ''.join(tracking_num.split())  # There's probably a more elegant way to do this.
+        print(tracking_num + '\n')
+
+    except TypeError:
+        print('OCR failed, no tracking number found.\n')
 
 
 def enhance(im):
+    im = im.convert("RGBA")  # Converts image (usually JPG) data to RGBA data for editing
     im_data = im.getdata()
 
     newimdata = []
